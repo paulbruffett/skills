@@ -1,0 +1,11 @@
+{
+  "name": "paul-skills",
+  "owner": { "name": "Paul Bruffett" },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": "./",
+      "description": "Personal agent skills for real engineering"
+    }
+  ]
+}
