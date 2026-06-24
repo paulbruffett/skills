@@ -1,4 +1,25 @@
+# Skills
 
+Personal agent skills for real engineering, packaged as a Claude Code plugin marketplace.
+
+## Installation
+
+From inside Claude Code:
+
+```
+/plugin marketplace add paulbruffett/skills
+/plugin install skills@paul-skills
+```
+
+Reload when prompted. Model-invoked skills become available automatically; user-invoked skills appear as slash commands (e.g. `/grill-me`, `/triage`, `/handoff`).
+
+To develop against a local checkout instead of GitHub, add it by path (substitute the path where you cloned this repo):
+
+```
+/plugin marketplace add /path/to/skills
+```
+
+## Engineering
 
 **User-invoked**
 
