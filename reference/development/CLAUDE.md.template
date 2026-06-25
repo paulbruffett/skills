@@ -1,0 +1,67 @@
+# <PROJECT NAME>
+
+<!--
+  This is project memory. It loads into every Claude Code session, so every line
+  costs context on every turn. Keep it lean — aim for well under ~150 lines.
+
+  The test for every line below: "If I removed this line, would Claude make a
+  mistake?" If the answer is no, remove it.
+
+  - Skip language/framework defaults Claude already knows (how to write a for-loop,
+    that Python uses 4 spaces, that React components return JSX).
+  - Keep only: the exact commands to run, the layout it can't guess, conventions
+    it can't infer (commit format, branch naming), and traps that have actually
+    bitten you.
+  - For anything long (architecture deep-dives, runbooks), don't paste it here —
+    point at a file with a path and a line number and let Claude read it on demand.
+  - Delete these HTML comments and the angle-bracket placeholders once you've
+    filled the file in.
+-->
+
+## Commands
+
+<!-- The exact invocations, copy-pasteable. Claude runs these constantly. -->
+
+- Build: `<e.g. npm run build>`
+- Test (all): `<e.g. npm test>`
+- Test (single file): `<e.g. npm test -- path/to/file.test.ts>`
+- Lint: `<e.g. npm run lint>` — autofix: `<e.g. npm run lint -- --fix>`
+- Typecheck: `<e.g. npm run typecheck>`
+- Run locally: `<e.g. npm run dev>`
+
+## Layout
+
+<!-- Only the parts that aren't obvious from a directory listing. -->
+
+- `<src/>` — <what lives here>
+- `<src/core/>` — <the part to be careful with, and why>
+- `<tests/>` — <test location + naming convention, e.g. *.test.ts colocated>
+- Architecture detail lives in `<docs/architecture.md>` — read it before touching `<core/>`.
+
+## Conventions Claude can't infer
+
+<!-- Things that have no default and that Claude will get wrong without being told. -->
+
+- Commit messages: `<e.g. Conventional Commits — feat:/fix:/chore:, imperative mood, <72 char subject>`.
+- Branch naming: `<e.g. type/short-description, e.g. fix/login-redirect>`.
+- Never commit directly to `<main>`; always branch first.
+- PRs: `<e.g. one vertical slice per PR; link the issue with "Closes #N">`.
+- <Any house style a linter doesn't already enforce.>
+
+## Traps
+
+<!-- Hard-won gotchas. The stuff that wastes an hour if you don't know it. -->
+
+- `<e.g. The dev server caches the schema — restart it after editing migrations.>`
+- `<e.g. `npm test` needs a running Postgres on :5432; start it with `docker compose up -d db`.>`
+- `<e.g. Don't edit `generated/` — it's regenerated from `schema.graphql` by the build.>`
+
+## Workflow
+
+<!-- How you want Claude to work here. Keep it short — the detailed procedures
+     live in skills, not in this file. -->
+
+- Default loop: explore → plan → code → verify. Plan before editing non-trivial changes.
+- Build features and fix bugs test-first — use the `tdd` skill.
+- For hard/slow bugs, use the `diagnosing-bugs` skill (build a failing repro first).
+- Always end a change by running the test suite and the linter before declaring done.

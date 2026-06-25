@@ -1,0 +1,60 @@
+{
+  "//": "Example .claude/settings.json — copy to .claude/settings.json in your repo and trim to taste. Comments use the conventional '//' key (JSON has no real comments); Claude Code tolerates extra keys, but delete them if your tooling validates the schema strictly. Verify field names against current docs: https://code.claude.com/docs/en/settings and /permissions",
+
+  "permissions": {
+    "//allow": "Auto-approved, no prompt. Keep this to read-only / clearly safe commands. The ':*' after a command is a trailing wildcard, so 'Bash(git status:*)' matches 'git status' and 'git status -s'.",
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm test:*)",
+      "Read(./src/**)",
+      "Read(./tests/**)"
+    ],
+
+    "//ask": "Prompt for confirmation before running. Use for things that mutate shared state or are hard to undo.",
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(npm publish:*)",
+      "Bash(rm:*)"
+    ],
+
+    "//deny": "Hard block, never runs and never prompts. Secrets and destructive commands belong here. Deny rules win over allow rules.",
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(./secrets/**)",
+      "Read(**/id_rsa)",
+      "Read(**/*.pem)",
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)"
+    ]
+  },
+
+  "//hooks": "PostToolUse runs AFTER a tool finishes. This one runs the formatter/lint hook after every Edit/Write so Claude fixes issues immediately instead of CI catching them later. See hooks/format-on-edit.sh and hooks/README snippet.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/format-on-edit.sh",
+            "timeout": 60,
+            "statusMessage": "Formatting edited file..."
+          }
+        ]
+      }
+    ]
+  }
+}

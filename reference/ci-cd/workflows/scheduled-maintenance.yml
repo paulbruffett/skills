@@ -1,0 +1,78 @@
+# scheduled-maintenance.yml — a weekly, scheduled (cron) maintenance job.
+#
+# Runs Claude Code on a timer to do a dependency / CVE audit and open an
+# issue (never a direct fix) with its findings. This is the "scheduled
+# maintenance" recipe from section 5 of the SDLC playbook.
+#
+# Two ways to run a job like this:
+#
+#   (A) GitHub Actions on `schedule:` — this file. You pay runner minutes
+#       plus tokens. Best when the work must touch this repo's CI context.
+#
+#   (B) Anthropic Scheduled Tasks — `/schedule` in Claude Code, or
+#       `claude schedule create`. Runs on Anthropic-managed infra on a cron,
+#       so you pay tokens, not runner minutes. Good for "morning PR review"
+#       or "weekly CVE audit" that don't need GitHub Actions. Example:
+#
+#         claude schedule create \
+#           --cron "0 13 * * 1" \
+#           --prompt "Audit dependencies for known CVEs and open a GitHub
+#                     issue summarizing any findings. Do not edit code."
+#
+#       (Verify the exact `claude schedule` / `/schedule` flags against
+#        current docs — the Scheduled Tasks surface is newer and moving.)
+#
+# Approval gate: this job only OPENS AN ISSUE. It does not edit code, bump
+# versions, or merge anything — a human reviews the issue and decides. Keep
+# write/merge/deploy/secret-changing work behind a human, never on a cron.
+
+name: Scheduled maintenance (weekly CVE audit)
+
+on:
+  schedule:
+    # Mondays at 13:00 UTC. Cron in Actions is UTC and best-effort (it can
+    # be delayed under load), which is fine for a weekly audit.
+    - cron: "0 13 * * 1"
+  # Allow a maintainer to trigger it on demand for testing.
+  workflow_dispatch:
+
+# Least privilege: read the code, write issues. No `contents: write`,
+# no PR write — this job is not allowed to change the repo.
+permissions:
+  contents: read
+  issues: write
+  id-token: write   # OIDC for the action
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    # Hard wall-clock ceiling so a runaway run can't burn minutes/tokens.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            Audit this project's dependencies for known, published CVEs and
+            clearly out-of-date pinned versions. Use the repo's lockfiles and
+            manifests. If you find issues, open ONE GitHub issue titled
+            "Weekly dependency/CVE audit (<date>)" summarizing each finding,
+            severity, and the suggested upgrade. If nothing is found, do
+            nothing. Do NOT edit any files or open a PR.
+          # Cost/determinism guardrails:
+          #   - cheaper model: an audit-and-report job is routine, not planning
+          #   - --max-turns caps the agent loop
+          #   - tools scoped to read + the one gh write we want (open an issue)
+          claude_args: >-
+            --model sonnet
+            --max-turns 12
+            --allowedTools "Read,Grep,Glob,Bash(gh issue create:*),Bash(gh issue list:*)"
+
+# NOTE: verify `anthropics/claude-code-action` inputs and the `claude_args`
+# flag names (`--model`, `--max-turns`, `--allowedTools`) against the current
+# action README before relying on this in production.
