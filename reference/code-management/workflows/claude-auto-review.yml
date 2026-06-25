@@ -1,9 +1,14 @@
 # Claude Auto Review — read-only PR review on every push to a PR.
 #
 # Based on the minimal auto-review workflow from the SDLC playbook research
-# (section 4, "PR & Code Review Automation"). Action inputs move fast — verify
-# the `with:` keys below against the current `anthropics/claude-code-action`
-# docs before relying on them in production.
+# (section 4, "PR & Code Review Automation").
+#
+# Inputs verified against anthropics/claude-code-action@v1 on 2026-06-25 — the
+# action ref, `anthropic_api_key`, `prompt`, `claude_args`, the `--allowedTools`
+# flag (camelCase), the `Bash(... :*)` permission syntax, and the
+# `mcp__github_inline_comment__create_inline_comment` tool name are all current.
+# This surface ships often, so re-check the `with:` keys against the current
+# action docs if you're adopting this much later.
 #
 # ─── FORK-PR SAFETY (read this before changing the trigger) ──────────────────
 # This workflow uses `on: pull_request`. For PRs from forks that means the job
