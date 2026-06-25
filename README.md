@@ -19,6 +19,10 @@ To develop against a local checkout instead of GitHub, add it by path (substitut
 /plugin marketplace add /path/to/skills
 ```
 
+## End-to-end workflow
+
+The [`reference/`](./reference/) directory shows how to assemble these skills into a single automated workflow spanning ideation → development → code management → CI/CD, with copyable templates (GitHub Actions, hooks, settings, scripts) for each phase. Start there to see how the building blocks below fit together.
+
 ## Engineering
 
 **User-invoked**

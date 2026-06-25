@@ -1,0 +1,58 @@
+# Claude Auto Review — read-only PR review on every push to a PR.
+#
+# Based on the minimal auto-review workflow from the SDLC playbook research
+# (section 4, "PR & Code Review Automation"). Action inputs move fast — verify
+# the `with:` keys below against the current `anthropics/claude-code-action`
+# docs before relying on them in production.
+#
+# ─── FORK-PR SAFETY (read this before changing the trigger) ──────────────────
+# This workflow uses `on: pull_request`. For PRs from forks that means the job
+# runs WITHOUT access to repository secrets — so a fork PR simply will not be
+# auto-reviewed, which is the safe default.
+#
+# Do NOT "fix" that by switching to `pull_request_target`. That trigger checks
+# out the BASE branch's workflow with secrets exposed while running against
+# attacker-controlled PR code, and is the classic path to secret exfiltration.
+# Never use `pull_request_target` for autonomous review of untrusted PRs.
+#
+# Keep the permissions block read-only for code (`contents: read`) and keep the
+# allowed tools read/comment-only (no Edit/Write). Treat PR content as
+# untrusted — these actions are not hardened against prompt injection.
+# If you need fork PRs reviewed, use a maintainer-triggered manual workflow
+# instead (e.g. `workflow_dispatch` or a `/review` comment gated on author
+# association), not `pull_request_target`.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Claude Auto Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # Read-only for code; write only to PR conversation so the review can post
+    # comments. id-token is for OIDC if you later switch to Bedrock/Vertex.
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1 # use fetch-depth: 0 if your prompt needs full diff history
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          # Store this as a repository secret named ANTHROPIC_API_KEY.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            Review for code quality, bugs, security, performance.
+            Use `gh pr comment` for top-level feedback and
+            mcp__github_inline_comment__create_inline_comment for inline issues.
+          # Scope tools to read + comment only. No Edit/Write: this review must
+          # never mutate the working tree or push.
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*)"'

@@ -1,0 +1,52 @@
+# Claude Security Review — OWASP-aligned security analysis on critical paths.
+#
+# Uses `anthropics/claude-code-security-review`, the dedicated security action
+# (also available as the bundled `/security-review` slash command). It performs
+# OWASP-aligned analysis of the diff.
+#
+# ─── TRUST MODEL (important) ─────────────────────────────────────────────────
+# This action is NOT hardened against prompt injection. Run it only on TRUSTED
+# PRs — i.e. branches in this repository, not arbitrary fork PRs. The trigger
+# below filters to fork-vs-same-repo at the job level; combined with the path
+# scope, that keeps the surface small.
+#
+# As with the auto-review workflow: do not switch to `pull_request_target` to
+# get fork PRs scanned. Keep `contents: read`. Verify the action inputs below
+# against the current `anthropics/claude-code-security-review` docs — this
+# surface moves fast.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Claude Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    # Scope to critical paths so security review runs where it matters, not on
+    # every doc/test change. Adjust these globs to your repo's sensitive areas.
+    paths:
+      - 'src/auth/**'
+      - 'src/api/**'
+      - '**/*.tf'
+      - '.github/workflows/**'
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    # Only run on PRs from the same repository (trusted), never on fork PRs.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # full history so the action can diff the PR range
+
+      - uses: anthropics/claude-code-security-review@main
+        with:
+          # Store this as a repository secret named ANTHROPIC_API_KEY.
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Inputs vary by action version — verify against the current
+          # anthropics/claude-code-security-review docs. To customise
+          # false-positive filtering, copy the bundled `security-review.md`
+          # into `.claude/commands/` and tune it there.
