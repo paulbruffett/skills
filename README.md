@@ -23,6 +23,10 @@ To develop against a local checkout instead of GitHub, add it by path (substitut
 
 The [`reference/`](./reference/) directory shows how to assemble these skills into a single automated workflow spanning ideation → development → code management → CI/CD, with copyable templates (GitHub Actions, hooks, settings, scripts) for each phase. Start there to see how the building blocks below fit together.
 
+## Design systems
+
+The [`design-systems/`](./design-systems/) directory is a **separate plugin** (`design-systems@paul-skills`) holding reusable visual languages for UI generation — each a model-invoked skill that shapes how Claude styles pages and components. It installs independently of the engineering skills below. See its [README](./design-systems/README.md); the first one is [`paper`](./design-systems/paper/SKILL.md).
+
 ## Engineering
 
 **User-invoked**

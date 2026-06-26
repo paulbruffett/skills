@@ -1,0 +1,7 @@
+{
+  "name": "design-systems",
+  "description": "Claude design-system skills — reusable visual languages for UI generation",
+  "skills": [
+    "./paper"
+  ]
+}
