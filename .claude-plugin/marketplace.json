@@ -6,6 +6,11 @@
       "name": "skills",
       "source": "./",
       "description": "Personal agent skills for real engineering"
+    },
+    {
+      "name": "design-systems",
+      "source": "./design-systems",
+      "description": "Claude design-system skills — reusable visual languages for UI generation"
     }
   ]
 }
