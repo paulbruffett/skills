@@ -1,6 +1,6 @@
 ---
-name: review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/PRD asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
+name: standards-review
+description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/PRD asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to check a diff against documented standards or its originating issue/PRD/spec, asks "does this match the PRD?", or says "standards review" / "spec review" / "review since X". Not a bug hunt — for correctness reviews use /code-review (local diff) or /review (GitHub PR).
 ---
 
 Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
@@ -9,6 +9,10 @@ Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 - **Spec** — does the code faithfully implement the originating issue / PRD / spec?
 
 Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+
+## Out of scope — stay complementary to /code-review and /review
+
+This skill judges the diff only against **external sources of truth** (written standards docs, the originating spec). It does **not** hunt for bugs, crashes, security issues, or generic code-quality problems — the built-in `/code-review` and `/review` cover those with their own finder/verifier agents. If a sub-agent stumbles on a likely bug, report it as a single one-line footnote pointing to `/code-review`; do not investigate or expand it. Likewise, never flag undocumented style preferences — if no repo doc states the rule, it is not a Standards finding.
 
 The issue tracker is recorded in `docs/agents/issue-tracker.md`.
 
@@ -43,13 +47,13 @@ Send a single message with two `Agent` tool calls. Use the `general-purpose` sub
 
 - The full diff command and commit list.
 - The list of standards-source files you found in step 3.
-- The brief: "Report — per file/hunk where relevant — every place the diff violates a documented standard. Cite the standard (file + the rule). Distinguish hard violations from judgement calls. Skip anything tooling enforces. Under 400 words."
+- The brief: "Report — per file/hunk where relevant — every place the diff violates a documented standard. Cite the standard (file + the rule). Distinguish hard violations from judgement calls. Skip anything tooling enforces. Do not report bugs or undocumented style opinions — a finding without a citable written rule is out of scope. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Do not report bugs unrelated to spec fidelity. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
